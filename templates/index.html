@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Platform</title>
+    <style>
+        :root[data-theme="light"] {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --card-bg: #f5f5f5;
+            --border-color: #e0e0e0;
+            --button-bg: #4CAF50;
+            --button-hover: #45a049;
+        }
+
+        :root[data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --card-bg: #2d2d2d;
+            --border-color: #404040;
+            --button-bg: #45a049;
+            --button-hover: #3d8b40;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .header {
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 2px solid var(--text-color);
+            color: var(--text-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .theme-toggle:hover {
+            opacity: 0.8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .tests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .test-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .test-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .test-subject {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .test-id {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .start-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--button-bg);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .start-button:hover {
+            background-color: var(--button-hover);
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.2rem;
+        }
+
+        .error {
+            color: #ff4444;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--bg-color);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-title {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--button-bg);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .modal-button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+
+        .modal-button.primary {
+            background-color: var(--button-bg);
+            color: white;
+        }
+
+        .modal-button.primary:hover {
+            background-color: var(--button-hover);
+        }
+
+        .modal-button.secondary {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-button.secondary:hover {
+            background-color: var(--border-color);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <h1>Test Platform</h1>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span class="theme-icon">🌙</span>
+            <span class="theme-text">Dark Mode</span>
+        </button>
+    </header>
+
+    <main class="container">
+        <div id="tests-container" class="tests-grid">
+            <div class="loading">Loading tests...</div>
+        </div>
+    </main>
+
+    <div class="modal" id="nameModal">
+        <div class="modal-content">
+            <h2 class="modal-title">Enter Your Name</h2>
+            <div class="input-group">
+                <label for="userName">Name:</label>
+                <input type="text" id="userName" placeholder="Enter your name" required>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button secondary" onclick="closeModal()">Cancel</button>
+                <button class="modal-button primary" onclick="startTestWithName()">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="start-button" onclick="showNameModal()">Start</button>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            const themeIcon = document.querySelector('.theme-icon');
+            const themeText = document.querySelector('.theme-text');
+
+            html.setAttribute('data-theme', newTheme);
+            themeIcon.textContent = newTheme === 'light' ? '🌙' : '☀️';
+            themeText.textContent = newTheme === 'light' ? 'Dark Mode' : 'Light Mode';
+        }
+
+        async function fetchTests() {
+            try {
+                const response = await fetch('/tests/');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch tests');
+                }
+                const tests = await response.json();
+                displayTests(tests);
+            } catch (error) {
+                document.getElementById('tests-container').innerHTML = `
+                    <div class="error">Error loading tests: ${error.message}</div>
+                `;
+            }
+        }
+
+        function displayTests(tests) {
+            const container = document.getElementById('tests-container');
+            if (tests.length === 0) {
+                container.innerHTML = '<div class="error">No tests available</div>';
+                return;
+            }
+
+            container.innerHTML = tests.map(test => `
+                <div class="test-card" onclick="selectTest(${test.id})">
+                    <div class="test-subject">${test.subject}</div>
+                    <div class="test-id">Test #${test.id}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectTest(testId) {
+            // Store selected test ID
+            localStorage.setItem('selectedTestId', testId);
+            // Highlight selected test
+            document.querySelectorAll('.test-card').forEach(card => {
+                card.style.border = card.querySelector('.test-id').textContent.includes(testId)
+                    ? '2px solid var(--button-bg)'
+                    : '1px solid var(--border-color)';
+            });
+        }
+
+        function showNameModal() {
+            const selectedTestId = localStorage.getItem('selectedTestId');
+            if (!selectedTestId) {
+                alert('Please select a test first!');
+                return;
+            }
+
+            const modal = document.getElementById('nameModal');
+            modal.classList.add('active');
+            document.getElementById('userName').focus();
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('nameModal');
+            modal.classList.remove('active');
+            document.getElementById('userName').value = '';
+        }
+
+        function startTestWithName() {
+            const userName = document.getElementById('userName').value.trim();
+            if (!userName) {
+                alert('Please enter your name');
+                return;
+            }
+
+            const selectedTestId = localStorage.getItem('selectedTestId');
+            // Store user name
+            localStorage.setItem('userName', userName);
+            // Navigate to test page with both test ID and user name
+            window.location.href = `/test/${selectedTestId}?name=${encodeURIComponent(userName)}`;
+        }
+
+        // Add keyboard event listener for the modal
+        document.getElementById('userName').addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                startTestWithName();
+            }
+        });
+
+        // Close modal if clicking outside
+        document.getElementById('nameModal').addEventListener('click', function (event) {
+            if (event.target === this) {
+                closeModal();
+            }
+        });
+
+        // Fetch tests when page loads
+        document.addEventListener('DOMContentLoaded', fetchTests);
+    </script>
+</body>
+
+</html>
