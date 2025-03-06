@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
+import shutil
 
 from db import get_db
 from models import Test
@@ -11,11 +12,23 @@ from services.test_services import (
     update_test,
     delete_test,
 )
+from services.parse_docx import parse_file
 
 router = APIRouter(
     prefix="/tests",
     tags=["tests"]
 )
+
+
+@router.post("/upload_file")
+async def upload_file(file: UploadFile):
+    try: 
+        with open(f"{file.filename}", "wb") as content:
+            shutil.copyfileobj(file.file, content)
+        return {"message": "success"}
+    except Exception as ex:
+        raise HTTPException(500, detail=str(ex))
+    
 
 
 @router.post("/create")
